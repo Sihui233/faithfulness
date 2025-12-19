@@ -1,14 +1,15 @@
 # faithfulness
-## data
-* annotation_data_final_no_None.json: human annotated data
-* annotation_data_final_sent_tokenized_gemini-2.0-flash.json: gemini annottaed data
-* cleaned.json: 5 manually cleaned document summary annotations
-* sentence_labeled_no_cleaning_drop_extrinsic_only.json: development set dropping extrinsic information error type
-* sentence_labeled_no_cleaning.json: development set
-* test_no_cleaning_no_drop.json: test set
-* test_no_cleaning_only_drop_extrinsic.json: test set dropping extrinsic information type
-* unfaithful_w_fixed_gem_annot.json: based on the gemini annottaion, manually fixed unfaithful summary sentneces for 17 docs
-* uniq_doc_topic_with_meta.json: containing information of unique documents and topics
+## Data description
+File Name,Description
+annotation_data_final_no_None.json,Human annotated data.
+annotation_data_final_sent_tokenized_gemini-2.0-flash.json,Gemini annotated data.
+cleaned.json,5 manually cleaned document annotations.
+sentence_labeled_no_cleaning_drop_extrinsic_only.json,Development set; excludes extrinsic information error type.
+sentence_labeled_no_cleaning.json,Full development set.
+test_no_cleaning_no_drop.json,Full test set.
+test_no_cleaning_only_drop_extrinsic.json,Test set; excludes extrinsic information error types.
+unfaithful_w_fixed_gem_annot.json,Manually fixed unfaithful summary sentences for 17 docs (based on Gemini annotations).
+uniq_doc_topic_with_meta.json,Metadata containing unique documents and topics.
 
 ## Scripts
 ### Faithfulness Classifier Training (train_classifier.py)
@@ -69,7 +70,7 @@ The script measures the **Conditional Log-Likelihood** of "Unfaithful" vs. "Fixe
 
 For a given document and summary pair, we calculate the probability assigned by various LLMs (Vicuna, Llama-3, etc.) to specific target sentences:
 
-$$\Delta \text{LogLikelihood} = \log P(\text{SummarySent} | \text{Source}_{\text{modified}} + \text{Prev SummarySents}) - \log P(\text{Summary} | \text{Source}_{\text{original}} + \text{Prev SummarySents})$$
+$$\Delta \text{LogLikelihood} = \log P(\text{SummarySent} | (\text{Source}_{\text{modified}} + \text{Prev SummarySents})) - \log P(\text{Summary} | (\text{Source}_{\text{original}} + \text{Prev SummarySents}))$$
 
 * **Hypothesis:** If the paraphrase is effective, the likelihood of the *Unfaithful* summary should decrease ($\Delta < 0$), and the likelihood of the *Fixed* summary should increase ($\Delta > 0$).
 
