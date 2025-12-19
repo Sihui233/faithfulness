@@ -1,15 +1,18 @@
 # faithfulness
-## Data description
-File Name,Description
-annotation_data_final_no_None.json,Human annotated data.
-annotation_data_final_sent_tokenized_gemini-2.0-flash.json,Gemini annotated data.
-cleaned.json,5 manually cleaned document annotations.
-sentence_labeled_no_cleaning_drop_extrinsic_only.json,Development set; excludes extrinsic information error type.
-sentence_labeled_no_cleaning.json,Full development set.
-test_no_cleaning_no_drop.json,Full test set.
-test_no_cleaning_only_drop_extrinsic.json,Test set; excludes extrinsic information error types.
-unfaithful_w_fixed_gem_annot.json,Manually fixed unfaithful summary sentences for 17 docs (based on Gemini annotations).
-uniq_doc_topic_with_meta.json,Metadata containing unique documents and topics.
+
+## Data Description
+
+| File Name | Description |
+| :--- | :--- |
+| `annotation_data_final_no_None.json` | Human annotated data. |
+| `annotation_data_final_sent_tokenized_gemini-2.0-flash.json` | Gemini annotated data. |
+| `cleaned.json` | 5 manually cleaned document annotations. |
+| `sentence_labeled_no_cleaning_drop_extrinsic_only.json` | Development set; excludes extrinsic information error type. |
+| `sentence_labeled_no_cleaning.json` | Full development set. |
+| `test_no_cleaning_no_drop.json` | Full test set. |
+| `test_no_cleaning_only_drop_extrinsic.json` | Test set; excludes extrinsic information error types. |
+| `unfaithful_w_fixed_gem_annot.json` | Manually fixed unfaithful summary sentences for 17 docs (based on Gemini annotations). |
+| `uniq_doc_topic_with_meta.json` | Metadata containing unique documents and topics. |
 
 ## Scripts
 ### Faithfulness Classifier Training (train_classifier.py)
