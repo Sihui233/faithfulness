@@ -65,6 +65,7 @@ BATCH_EXPERIMENTS = [
     # ... Add more models
 ]
 ```
+```models.md``` contains link to the trained models and current evaluation results.
 
 ### Mitigation by Paraphrasing: Hallucination Evaluation using Log-likelihood (mitigation.py)
 This file contains the evaluation pipeline for testing whether paraphrasing source documents (e.g., simplifying complex sentences) mitigates hallucination in Large Language Models (LLMs). 
