@@ -160,10 +160,10 @@ def train_model(train_data, eval_data, model_name, output_dir, epochs=6, lr=1e-5
 
     model = AutoModelForSequenceClassification.from_pretrained(model_name, config=config)
 
-    # Freeze encoder, train classifier only (optional, based on experimental needs)
-    # for param in model.base_model.parameters():
-    #     param.requires_grad = False
-    
+    # Freeze encoder, train classifier only
+    for param in model.base_model.parameters():
+        param.requires_grad = False
+
     weights = get_class_weights(train_data)
     train_ds = FaithfulnessDataset(train_data, tokenizer)
     eval_ds = FaithfulnessDataset(eval_data, tokenizer)
