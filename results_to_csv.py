@@ -1,80 +1,81 @@
 import os
 import json
 import pandas as pd
-
+import argparse
 
 def process_mitigation_results(base_dir: str, timestamp: str, save_dir: str):
     """
-    Read per-method JSONL results, compute metrics, and save summary CSVs.
+    Parses per-method JSONL files to compute delta metrics and saves statistical summaries.
+    Calculates A (initial preference gap) and B (mitigated preference gap).
     """
     os.makedirs(save_dir, exist_ok=True)
-    methods = ["split", "default"] # "simplify", "clarify",
-    jsonl_paths = {
-        name: os.path.join(base_dir, f"paraphrase_{name}_results_{timestamp}.jsonl")
-        for name in methods
-    }
-
-    for method, jsonl_path in jsonl_paths.items():
-        print(f"Processing {method}: {jsonl_path}")
+    # Define which paraphrase methods were used in the experiment
+    methods = ["split", "default", "simplify", "clarify"] 
+    
+    for method in methods:
+        jsonl_path = os.path.join(base_dir, f"paraphrase_{method}_results_{timestamp}.jsonl")
+        if not os.path.exists(jsonl_path):
+            continue
+            
+        print(f"Aggregating metrics for: {method}")
         rows = []
         with open(jsonl_path, 'r') as f:
             for line in f:
                 item = json.loads(line)
                 model_scores = item.get('model_scores', {})
+                
                 for model_key, scores in model_scores.items():
+                    # Extract raw Log-Likelihoods
                     ll_unf_orig = scores.get('ll_unf_orig', 0)
                     ll_fix_orig = scores.get('ll_fixed_orig', 0)
                     ll_unf_mod = scores.get('ll_unf_mod', 0)
                     ll_fix_mod = scores.get('ll_fixed_mod', 0)
 
-                    delta_unf = scores.get('delta_unf', None)
-                    delta_fixed = scores.get('delta_fixed', None)
-
+                    # A: Ground truth preference gap in original source
+                    # B: Ground truth preference gap in modified source
                     A = ll_fix_orig - ll_unf_orig
                     B = ll_fix_mod - ll_unf_mod
-                    B_minus_A = B - A
-
+                    
                     rows.append({
                         'model': model_key,
-                        'delta_unf': delta_unf,
-                        'delta_fixed': delta_fixed,
+                        'delta_unf': scores.get('delta_unf', 0),
+                        'delta_fixed': scores.get('delta_fixed', 0),
                         'A': A,
                         'B': B,
-                        'B_minus_A': B_minus_A
+                        'B_minus_A': B - A
                     })
 
         df = pd.DataFrame(rows)
         summary = []
         for model in df['model'].unique():
             grp = df[df['model'] == model]
-            A_vals = grp['A']
-            B_vals = grp['B']
-
+            
+            # Aggregate stats per model
             summary.append({
                 'model': model,
                 'mean_delta_unf': grp['delta_unf'].mean(),
                 'mean_delta_fix': grp['delta_fixed'].mean(),
-                'mean_A': A_vals.mean(),
-                'mean_B': B_vals.mean(),
+                'mean_A': grp['A'].mean(),
+                'mean_B': grp['B'].mean(),
                 'mean_B_minus_A': grp['B_minus_A'].mean(),
-                'A_pos_count': int((A_vals > 0).sum()),
-                'A_neg_count': int((A_vals < 0).sum()),
-                'B_pos_count': int((B_vals > 0).sum()),
-                'B_neg_count': int((B_vals < 0).sum()),
-                'n': len(grp)
+                'A_pos_count': int((grp['A'] > 0).sum()), # Times model preferred 'Fixed' originally
+                'B_pos_count': int((grp['B'] > 0).sum()), # Times model preferred 'Fixed' after mitigation
+                'sample_size': len(grp)
             })
+            
         out_df = pd.DataFrame(summary)
-        csv_path = os.path.join(save_dir, f"results_{method}.csv")
+        csv_path = os.path.join(save_dir, f"metrics_{method}.csv")
         out_df.to_csv(csv_path, index=False)
-        print(f"Saved summary CSV to {csv_path}")
+        print(f"  -> Saved {csv_path}")
 
 
 def save_style_preferences(json_dir: str, timestamp: str, save_dir: str):
     """
-    Load JSONL paraphrase results and save preference tables as CSV for each style.
+    Creates a 'Preference Table' showing whether each model preferred 
+    the fixed summary in the original (orig), modified (mod), both, or neither (--) state.
     """
     os.makedirs(save_dir, exist_ok=True)
-    styles = ['default', 'split'] #, 'simplify', 'clarify'
+    styles = ['default', 'split', 'simplify', 'clarify']
     model_map = [
         ('vicuna-7b', 'Vicuna-7B'),
         ('wizardlm-13b', 'WizardLM-13B'),
@@ -83,40 +84,46 @@ def save_style_preferences(json_dir: str, timestamp: str, save_dir: str):
     ]
 
     for style in styles:
-        records = []
         path = os.path.join(json_dir, f"paraphrase_{style}_results_{timestamp}.jsonl")
+        if not os.path.exists(path):
+            continue
+            
+        records = []
         with open(path, 'r') as f:
             for line in f:
                 rec = json.loads(line)
-                snippet = rec.get('unfaithful_summary', '')[:60] + '…'
-                row = {'ID': rec.get('document_id'), 'Unf snippet': snippet}
-                for key, name in model_map:
+                snippet = rec.get('unfaithful_summary', '')[:60]
+                row = {'ID': rec.get('document_id'), 'Snippet': snippet}
+                
+                for key, display_name in model_map:
                     scores = rec['model_scores'].get(key, {})
+                    # Did the model correctly prefer the Fixed summary?
                     orig_pref = scores.get('ll_fixed_orig', 0) > scores.get('ll_unf_orig', 0)
                     mod_pref = scores.get('ll_fixed_mod', 0) > scores.get('ll_unf_mod', 0)
-                    if orig_pref and mod_pref:
-                        label = 'both'
-                    elif orig_pref:
-                        label = 'orig'
-                    elif mod_pref:
-                        label = 'mod'
-                    else:
-                        label = '--'
-                    row[name + ' Pref'] = label
+                    
+                    if orig_pref and mod_pref: label = 'both'
+                    elif orig_pref: label = 'orig_only'
+                    elif mod_pref: label = 'mod_only'
+                    else: label = '--'
+                    
+                    row[display_name] = label
                 records.append(row)
 
         df = pd.DataFrame(records)
         csv_path = os.path.join(save_dir, f"preferences_{style}.csv")
         df.to_csv(csv_path, index=False)
-        print(f"Saved preferences CSV for {style} to {csv_path}")
+        print(f"Successfully exported preference table for {style}")
 
 
 if __name__ == '__main__':
-    TIMESTAMP = "20250811_154747"  # update as needed
-    BASE_DIR = f"path_to_file_{TIMESTAMP}"
-    SAVE_DIR = os.path.join(BASE_DIR, 'csv_outputs')  # folder for all CSV exports
+    # Use argparse for better CLI control
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--timestamp", type=str, required=True, help="Timestamp from the experiment logs")
+    parser.add_argument("--base_dir", type=str, required=True, help="Directory containing JSONL files")
+    args = parser.parse_args()
 
-    # Process and save mitigation summaries
-    process_mitigation_results(BASE_DIR, TIMESTAMP, SAVE_DIR)
-    # Save preference tables without display
-    save_style_preferences(BASE_DIR, TIMESTAMP, SAVE_DIR)
+    # Setup save directory within the base folder
+    output_folder = os.path.join(args.base_dir, 'csv_outputs')
+
+    process_mitigation_results(args.base_dir, args.timestamp, output_folder)
+    save_style_preferences(args.base_dir, args.timestamp, output_folder)

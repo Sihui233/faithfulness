@@ -15,14 +15,14 @@ from transformers import (
 # --- Configuration for Batch Experiments ---
 BATCH_EXPERIMENTS = [
     {
-        "model_path": "~/scratch/faithful_raw_roberta-base_star_20250613-125332",
+        "model_path": "~/scratch/faithful_raw_roberta-base",
         "test_sets": [
             ("No drop", "~/data/test_no_cleaning_no_drop.json"),
             ("No Cleaning drop only extrinsic", "~/data/test_no_cleaning_only_drop_extrinsic.json"),
         ]
     },
     {
-        "model_path": "~/scratch/faithful_raw_drop_only_extrinsic_roberta-base_star_20250626-141350",
+        "model_path": "~/scratch/faithful_raw_drop_only_extrinsic_roberta-base",
         "test_sets": [
             ("No drop", "~/data/test_no_cleaning_no_drop.json"),
             ("No Cleaning drop only extrinsic", "~/data/test_no_cleaning_only_drop_extrinsic.json"),

@@ -1,0 +1,27 @@
+# ML Frameworks
+torch==2.2.0
+torchvision==0.17.0
+torchaudio==2.2.0
+
+# LLM & Transformers
+transformers==4.51.0
+accelerate==0.26.0
+bitsandbytes==0.41.3
+sentencepiece
+protobuf
+
+# Data & Evaluation
+datasets>=2.18.0
+scikit-learn>=1.2.2
+numpy==1.24.4
+bert-score==0.3.12
+nltk
+
+# Experiment Tracking & APIs
+optuna
+openai
+google-generativeai
+
+# Utilities
+psutil>=5.9.0
+pandas
