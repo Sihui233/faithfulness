@@ -1,5 +1,6 @@
 * Link to models: https://drive.google.com/drive/folders/1WLRw-Pl85HvZNvUamn7DrPV_j8SOhbPD?usp=drive_link
-* Evaluation results:
+
+Evaluation results:
 | Training Setup | Test Data | Balanced Acc. |
 | :--- | :--- | :--- |
 | All error types | Cleaned (all types) | 0.6315 |
