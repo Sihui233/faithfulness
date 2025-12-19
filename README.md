@@ -1,14 +1,14 @@
 # faithfulness
 ## data
-annotation_data_final_no_None.json: human annotated data
-annotation_data_final_sent_tokenized_gemini-2.0-flash.json: gemini annottaed data
-cleaned.json: 5 manually cleaned document summary annotations
-sentence_labeled_no_cleaning_drop_extrinsic_only.json: development set dropping extrinsic information error type
-sentence_labeled_no_cleaning.json: development set
-test_no_cleaning_no_drop.json: test set
-test_no_cleaning_only_drop_extrinsic.json: test set dropping extrinsic information type
-unfaithful_w_fixed_gem_annot.json: based on the gemini annottaion, manually fixed unfaithful summary sentneces for 17 docs
-uniq_doc_topic_with_meta.json: containing information of unique documents and topics
+* annotation_data_final_no_None.json: human annotated data
+* annotation_data_final_sent_tokenized_gemini-2.0-flash.json: gemini annottaed data
+* cleaned.json: 5 manually cleaned document summary annotations
+* sentence_labeled_no_cleaning_drop_extrinsic_only.json: development set dropping extrinsic information error type
+* sentence_labeled_no_cleaning.json: development set
+* test_no_cleaning_no_drop.json: test set
+* test_no_cleaning_only_drop_extrinsic.json: test set dropping extrinsic information type
+* unfaithful_w_fixed_gem_annot.json: based on the gemini annottaion, manually fixed unfaithful summary sentneces for 17 docs
+* uniq_doc_topic_with_meta.json: containing information of unique documents and topics
 
 ## Scripts
 ### Faithfulness Classifier Training (train_classifier.py)
@@ -40,8 +40,8 @@ Use this when checking one specific model against one test file
 
 ```bash
 python evaluate_classifier.py \
-  --model ~/scratch/25summ_results/faithful_raw_roberta-base_star_20250613-125332 \
-  --data ~/25summ/test_no_cleaning_only_drop_extrinsic.json
+  --model /path/to/model \
+  --data /path/to/data
 ```
 ##### 1. Batch Mode
 ```bash
